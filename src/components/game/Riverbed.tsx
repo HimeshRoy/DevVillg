@@ -9,8 +9,8 @@ import {
   getTerrainHeight,
 } from "./terrainHeight";
 
-const LENGTH = 2000;
-const SEGMENTS = 800;
+const LENGTH = 400;
+const SEGMENTS = 200;
 
 // Riverbed extends beneath the water and into both shallow banks.
 const OFFSETS = [

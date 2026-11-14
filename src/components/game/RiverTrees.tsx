@@ -1,14 +1,10 @@
-
 "use client";
 
 import { useGLTF } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
-import {
-  getRiverCenterZ,
-  getTerrainHeight,
-} from "./terrainHeight";
+import { getRiverCenterZ, getTerrainHeight } from "./terrainHeight";
 
 // Quaternius Stylized Nature MegaKit
 const BASE = "/models/nature/glTF/";
@@ -43,22 +39,14 @@ function seededRandom(seed: number) {
   };
 }
 
-function getBankPosition(
-  x: number,
-  side: number,
-  distance: number
-) {
-  const slope =
-    getRiverCenterZ(x + 0.5) -
-    getRiverCenterZ(x - 0.5);
+function getBankPosition(x: number, side: number, distance: number) {
+  const slope = getRiverCenterZ(x + 0.5) - getRiverCenterZ(x - 0.5);
 
   const length = Math.sqrt(1 + slope * slope);
 
   return {
     x: x - (slope / length) * distance * side,
-    z:
-      getRiverCenterZ(x) +
-      (1 / length) * distance * side,
+    z: getRiverCenterZ(x) + (1 / length) * distance * side,
   };
 }
 
@@ -73,8 +61,8 @@ function createTreePlacements() {
 
   // Natural clusters on both sides of the river.
   for (const side of [-1, 1]) {
-    for (let cluster = 0; cluster < 22; cluster++) {
-      const centerX = -850 + random() * 1700;
+    for (let cluster = 0; cluster < 12; cluster++) {
+      const centerX = -180 + random() * 360;
       const centerDistance = 20 + random() * 27;
 
       const treeCount = 2 + Math.floor(random() * 3);
@@ -85,17 +73,11 @@ function createTreePlacements() {
         const name = TREE_NAMES[type];
 
         // Irregular cluster placement.
-        const x =
-          centerX + (random() - 0.5) * 27;
+        const x = centerX + (random() - 0.5) * 27;
 
-        const distance =
-          centerDistance + (random() - 0.5) * 13;
+        const distance = centerDistance + (random() - 0.5) * 13;
 
-        const position = getBankPosition(
-          x,
-          side,
-          distance
-        );
+        const position = getBankPosition(x, side, distance);
 
         result[name].push({
           x: position.x,
@@ -139,24 +121,16 @@ function TreePart({
     placements.forEach((tree, index) => {
       position.set(
         tree.x,
-        getTerrainHeight(tree.x, tree.z) -
-          modelMinY * tree.scale,
-        tree.z
+        getTerrainHeight(tree.x, tree.z) - modelMinY * tree.scale,
+        tree.z,
       );
 
       rotation.setFromAxisAngle(up, tree.rotation);
       scale.setScalar(tree.scale);
 
-      placementMatrix.compose(
-        position,
-        rotation,
-        scale
-      );
+      placementMatrix.compose(position, rotation, scale);
 
-      finalMatrix.multiplyMatrices(
-        placementMatrix,
-        part.matrix
-      );
+      finalMatrix.multiplyMatrices(placementMatrix, part.matrix);
 
       mesh.setMatrixAt(index, finalMatrix);
     });
@@ -168,14 +142,10 @@ function TreePart({
   return (
     <instancedMesh
       ref={meshRef}
-      args={[
-        part.geometry,
-        part.material,
-        placements.length,
-      ]}
+      args={[part.geometry, part.material, placements.length]}
       castShadow={false}
       receiveShadow={false}
-      frustumCulled={false}
+      frustumCulled={true}
     />
   );
 }
@@ -232,11 +202,7 @@ export default function RiverTrees() {
   return (
     <group name="river-broadleaf-trees">
       {TREE_NAMES.map((name) => (
-        <TreeAsset
-          key={name}
-          name={name}
-          placements={TREE_PLACEMENTS[name]}
-        />
+        <TreeAsset key={name} name={name} placements={TREE_PLACEMENTS[name]} />
       ))}
     </group>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { useFBX, useAnimations } from "@react-three/drei";
+import { Html, useFBX, useAnimations } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { SkeletonUtils } from "three-stdlib";
 import * as THREE from "three";
@@ -12,6 +12,8 @@ import {
   blocksHouseMovement,
   HOUSE01,
   HOUSE02,
+  HOUSE03,
+  HOUSE04,
   updateHouseDoorFromPlayer,
 } from "./houseState";
 
@@ -36,6 +38,9 @@ export default function Character() {
   const jumping = useRef(false);
   const jumpAnimationFinished = useRef(false);
   const verticalVelocity = useRef(0);
+
+  const coordinateLabel = useRef<HTMLDivElement>(null);
+  const coordinateUpdateTimer = useRef(0);
 
   // Animation state
   const currentAnimation = useRef<AnimationName | null>(null);
@@ -309,6 +314,17 @@ export default function Character() {
 
     const dt = Math.min(delta, 0.05);
 
+    // Temporary world-coordinate display
+    coordinateUpdateTimer.current += dt;
+
+    if (coordinateUpdateTimer.current >= 0.1) {
+      coordinateUpdateTimer.current = 0;
+
+      if (coordinateLabel.current) {
+        coordinateLabel.current.textContent = `X: ${player.position.x.toFixed(2)} | Z: ${player.position.z.toFixed(2)}`;
+      }
+    }
+
     // Read movement input
     const forward =
       (keys.current["KeyW"] || keys.current["ArrowUp"] ? 1 : 0) -
@@ -400,7 +416,32 @@ export default function Character() {
       Math.abs(player.position.x - HOUSE02.x) < 3.6 &&
       Math.abs(player.position.z - HOUSE02.z) < 3.6;
 
-    const houseFloor = insideHouse01 ? HOUSE01 : insideHouse02 ? HOUSE02 : null;
+    const insideHouse03 =
+      Math.abs(player.position.x - HOUSE03.x) < 3.6 &&
+      Math.abs(player.position.z - HOUSE03.z) < 3.6;
+
+    // House 04 is rotated, so transform player coordinates
+    // into the workshop's local coordinate system.
+    const dx04 = player.position.x - HOUSE04.x;
+    const dz04 = player.position.z - HOUSE04.z;
+
+    const cos04 = Math.cos(HOUSE04.rotation);
+    const sin04 = Math.sin(HOUSE04.rotation);
+
+    const localX04 = cos04 * dx04 - sin04 * dz04;
+    const localZ04 = sin04 * dx04 + cos04 * dz04;
+
+    const insideHouse04 = Math.abs(localX04) < 4.6 && Math.abs(localZ04) < 4.6;
+
+    const houseFloor = insideHouse01
+      ? HOUSE01
+      : insideHouse02
+        ? HOUSE02
+        : insideHouse03
+          ? HOUSE03
+          : insideHouse04
+            ? HOUSE04
+            : null;
 
     const groundHeight = houseFloor
       ? getTerrainHeight(houseFloor.x, houseFloor.z)
@@ -556,6 +597,31 @@ export default function Character() {
   return (
     <group ref={root}>
       <primitive object={character} />
+
+      {/* Temporary player coordinates */}
+      <Html
+        position={[0, 2.15, 0]}
+        center
+        distanceFactor={10}
+        style={{ pointerEvents: "none" }}
+      >
+        <div
+          ref={coordinateLabel}
+          style={{
+            background: "rgba(0, 0, 0, 0.8)",
+            color: "#ffffff",
+            padding: "7px 11px",
+            borderRadius: "7px",
+            fontSize: "13px",
+            fontWeight: 600,
+            fontFamily: "monospace",
+            whiteSpace: "nowrap",
+            border: "1px solid rgba(255,255,255,0.35)",
+          }}
+        >
+          X: 0.00 | Z: 0.00
+        </div>
+      </Html>
     </group>
   );
 }

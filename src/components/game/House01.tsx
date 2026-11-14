@@ -39,7 +39,6 @@ function makeDoubleSided(model: THREE.Object3D) {
  * Places a modular model by its bounding-box centre in XZ
  * and its bottom in Y. This keeps the GLTF pivots predictable.
  */
-
 function placeModel(
   parent: THREE.Group,
   source: THREE.Object3D,
@@ -47,7 +46,7 @@ function placeModel(
   z: number,
   bottomY: number,
   rotationY = 0,
-  scale = 1
+  scale = 1,
 ) {
   const model = makeDoubleSided(source.clone(true));
 
@@ -58,11 +57,7 @@ function placeModel(
 
   const pivot = new THREE.Group();
 
-  pivot.position.set(
-    x,
-    bottomY - bounds.min.y * scale,
-    z
-  );
+  pivot.position.set(x, bottomY - bounds.min.y * scale, z);
 
   pivot.rotation.y = rotationY;
   pivot.scale.setScalar(scale);
@@ -73,7 +68,6 @@ function placeModel(
   pivot.add(model);
   parent.add(pivot);
 }
-
 
 function DoorLeaf({
   source,
@@ -125,7 +119,7 @@ function DoorLeaf({
         HOUSE01.z + HOUSE01.halfSize + 0.05,
       ]}
     >
-      <primitive object={doorModel.model} />
+      <primitive object={doorModel.model} dispose={null} />
     </group>
   );
 }
@@ -141,8 +135,8 @@ export default function House01() {
   const door = useGLTF(`${BASE}Door_1_Flat.gltf`);
   const window = useGLTF(`${BASE}Window_Wide_Flat1.gltf`);
 
-  const roof = useGLTF(`${BASE}Roof_RoundTiles_6x6.gltf`);
-
+  // Fixed: Upgraded from the undersized 6x6 roof to 8x8 to perfectly match the 8x8 wall footprint and gables
+  const roof = useGLTF(`${BASE}Roof_RoundTiles_8x8.gltf`);
   const gable = useGLTF(`${BASE}Roof_Front_Brick8.gltf`);
 
   const houseBase = useMemo(() => getTerrainHeight(HOUSE01.x, HOUSE01.z), []);
@@ -212,8 +206,8 @@ export default function House01() {
       }
     }
 
-    // ROOF: tiled roof sits on the wall tops.
-    placeModel(root, roof.scene, 0, 0, WALL_TOP - 0.08, 0, 1.16);
+    // ROOF: tiled roof sits on the wall tops (removed the faulty scale factor so it resolves to true 8x8)
+    placeModel(root, roof.scene, 0, 0, WALL_TOP - 0.08);
 
     // GABLE ENDS: one at each end of the roof ridge.
     placeModel(root, gable.scene, 0, 4, WALL_TOP);
@@ -255,5 +249,6 @@ useGLTF.preload(`${BASE}Wall_Plaster_Door_Flat.gltf`);
 useGLTF.preload(`${BASE}Wall_Plaster_Window_Wide_Flat.gltf`);
 useGLTF.preload(`${BASE}Door_1_Flat.gltf`);
 useGLTF.preload(`${BASE}Window_Wide_Flat1.gltf`);
-useGLTF.preload(`${BASE}Roof_RoundTiles_6x6.gltf`);
+// Update the preload path
+useGLTF.preload(`${BASE}Roof_RoundTiles_8x8.gltf`);
 useGLTF.preload(`${BASE}Roof_Front_Brick8.gltf`);

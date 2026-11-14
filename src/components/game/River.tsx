@@ -11,9 +11,9 @@ import { getRiverCenterZ, getRiverSurfaceHeight } from "./terrainHeight";
 // Original project: MIT License,
 // Copyright (c) 2026 Christian Ortiz.
 
-const RIVER_LENGTH = 2000;
+const RIVER_LENGTH = 400;
 const HALF_WIDTH = 4;
-const SEGMENTS = 800;
+const SEGMENTS = 200;
 
 function createRiverGeometry() {
   const positions: number[] = [];

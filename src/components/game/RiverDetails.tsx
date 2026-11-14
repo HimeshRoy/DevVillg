@@ -112,7 +112,7 @@ function createPlacements() {
   ) {
     for (const side of [-1, 1]) {
       for (let cluster = 0; cluster < clusterCount; cluster++) {
-        const centerX = -970 + rand() * 1940;
+        const centerX = -175 + rand() * 350;
         const clusterDistance =
           minDistance +
           rand() * (maxDistance - minDistance);
@@ -249,7 +249,7 @@ function InstancedPart({
       ]}
       castShadow={false}
       receiveShadow={false}
-      frustumCulled={false}
+      frustumCulled={true}
     />
   );
 }
